@@ -17,6 +17,8 @@ from PIL import Image
 from StringIO import StringIO
 #to get post 
 import urllib
+#for negative comment check
+from textblob.sentiments import NaiveBayesAnalyzer
 #app token
 APP_ACCESS_TOKEN = "1056537964.1677ed0.eba5c412df8540069a9bca62389f7ab0"
 BASE_URL='https://api.instagram.com/v1/'
@@ -157,3 +159,57 @@ def like_a_post(insta_username):
 		print 'Like unsuccesfull'
         
 like_a_post("vipsparashar")
+
+#function to get comment
+def get_comment(insta_username):
+    #get username
+	media_id = get_user_post(insta_username)
+	request_url = (BASE_URL + 'media/%s/comments/?access_token=%s') % (media_id, APP_ACCESS_TOKEN)
+	print 'GET request url : %s' % (request_url)
+	comment_info = requests.get(request_url).json()
+
+	if comment_info['meta']['code'] == 200:
+        #if comment exist
+		if len(comment_info['data']) > 0:
+			for comment in comment_info['data']:
+				comment_text = comment['text']
+                #print comments
+        for i in comment_text:
+              print comment_text[i]
+           
+get_comment("vipsparashar")                
+                
+ #function to delete negative comment
+               
+def delete_negative_comment(insta_username):
+    #get username
+	media_id = get_user_post(insta_username)
+	request_url = (BASE_URL + 'media/%s/comments/?access_token=%s') % (media_id, APP_ACCESS_TOKEN)
+	print 'GET request url : %s' % (request_url)
+	comment_info = requests.get(request_url).json()
+
+	if comment_info['meta']['code'] == 200:
+        #if there is a comment
+		if len(comment_info['data']) > 0:
+			for comment in comment_info['data']:
+				comment_text = comment['text']
+                #analyze the comment
+				blob = TextBlob(comment_text, analyzer=NaiveBayesAnalyzer())
+                #negative positive check
+				if blob.sentiment.p_neg > blob.sentiment.p_pos:
+					comment_id = comment['id']
+					delete_url = (BASE_URL + 'media/%s/comments/%s/?access_token=%s') % (
+						media_id, comment_id, APP_ACCESS_TOKEN)
+					print 'DELETE request url : %s' % (delete_url)
+                #to delete negative comment
+					delete_info = requests.delete(delete_url).json()
+
+					if delete_info['meta']['code'] == 200:
+						print 'Comment successfully deleted!'
+					else:
+						print 'Could not delete the comment'
+        else:
+			print 'No comments found'
+    else:
+		print 'Status code other than 200 received!
+delete_negative_comment("vipparashar")
