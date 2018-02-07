@@ -138,3 +138,22 @@ def get_user_post(insta_username):
     
     
 get_user_post("vipsparashar")
+
+#to like a user post
+def like_a_post(insta_username):
+    
+#get user id
+	media_id = get_user_post(insta_username)
+#insta url for liking
+	request_url = (BASE_URL + 'media/%s/likes') % (media_id)
+	payload = {"access_token": APP_ACCESS_TOKEN}
+	print 'POST request url : %s' % (request_url)
+    #json appi
+	post_a_like = requests.post(request_url, payload).json()
+
+	if post_a_like['meta']['code'] == 200:
+		print 'Like was successful!'
+	else:
+		print 'Like unsuccesfull'
+        
+like_a_post("vipsparashar")
