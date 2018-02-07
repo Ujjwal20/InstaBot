@@ -15,6 +15,8 @@ Created on Tue Feb 06 22:20:16 2018
 import requests
 from PIL import Image
 from StringIO import StringIO
+#to get post 
+import urllib
 #app token
 APP_ACCESS_TOKEN = "1056537964.1677ed0.eba5c412df8540069a9bca62389f7ab0"
 BASE_URL='https://api.instagram.com/v1/'
@@ -87,3 +89,52 @@ def get_user_info(insta_username):
         
         
 get_user_info("vipsparashar")
+
+#function to get own post
+def get_own_post():
+    request_url = (BASE_URL + 'users/self/media/recent/?access_token=%s') % (APP_ACCESS_TOKEN)
+    print 'GET request url : %s' % (request_url)
+    #json of own media
+    own_media = requests.get(request_url).json()
+#media code check
+    if own_media['meta']['code'] == 200:
+        if len(own_media['data']):
+            image_name = own_media['data'][0]['id'] + '.jpeg'
+            image_url = own_media['data'][0]['images']['standard_resolution']['url']
+            #image 
+            urllib.urlretrieve(image_url, image_name)
+            print 'Your image has been downloaded!'
+        else:
+            print 'Post does not exist!'
+    else:
+        print 'Status code other than 200 received!'
+        
+get_own_post()
+
+#function to get user post
+def get_user_post(insta_username):
+	user_id = get_user_id(insta_username)
+    #user id check
+	if user_id == None:
+		print 'User does not exist!'
+		exit()
+#url
+	request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s') % (user_id, APP_ACCESS_TOKEN)
+	print 'GET request url : %s' % (request_url)
+	user_media = requests.get(request_url).json()
+    #meta code check
+	if user_media['meta']['code'] == 200:
+		if len(user_media['data']) > 0:
+			image_name = user_media['data'][0]['id'] + '.jpeg'
+			image_url = user_media['data'][0]['images']['standard_resolution']['url']
+			urllib.urlretrieve(image_url, image_name)
+			print 'Your image has been downloaded!'
+			return user_media['data'][0]['id']
+		else:
+			print "There is no recent post!"
+	else:
+		print "Status code other than 200 received!"
+		return None
+    
+    
+get_user_post("vipsparashar")
