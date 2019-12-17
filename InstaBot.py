@@ -62,7 +62,7 @@ def get_user_id(insta_username):
             #return Nono
             return "None"
     else:
-        print 'Status code other than 200 received!'
+        print 'Status code other than 200 received! '
         exit()
 
 
